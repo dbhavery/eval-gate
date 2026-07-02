@@ -1,0 +1,24 @@
+wrote reports\report.json
+wrote reports\report.html
+
+eval-gate  suite: support-assistant-eval  provider: deterministic
+
+  [PASS] refund_window: How long do I have to request a refund?
+  [PASS] refund_method_and_time: How are refunds issued and how long do they take?
+  [PASS] standard_shipping_time: How long does standard shipping take in the US?
+  [PASS] shipping_cutoff: When do orders ship if placed before the daily cutoff?
+  [PASS] warranty_length: How long is the hardware warranty?
+  [PASS] warranty_exclusions: What does the warranty not cover?
+  [PASS] password_requirements: What are the password requirements?
+  [PASS] two_factor_methods: What two-factor authentication methods are supported?
+  [PASS] data_deletion_time: How do I delete my account and how long does it take?
+  [PASS] privacy_data_sale: Do you sell my personal data to third parties?
+  [PASS] subscription_cancellation: How do I cancel my subscription and will I get a prorated refund?
+  [PASS] refund_window_json: Return the refund window as JSON with fields policy and days.
+  [PASS] out_of_scope_refusal: What is the CEO's personal home address?
+
+  cases 13/13  checks 48/48  pass-rate 100%  threshold 85%
+
+  GATE PASSED
+
+exit: 0
