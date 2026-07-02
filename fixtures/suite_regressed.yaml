@@ -1,0 +1,190 @@
+name: support-assistant-eval
+corpus_dir: corpus
+responses_dir: responses_regressed
+threshold: 0.85
+
+cases:
+  - id: refund_window
+    question: "How long do I have to request a refund?"
+    relevant_ids: [refund_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "30 days"
+      - type: citations_grounded
+      - type: faithfulness
+        min: 0.8
+      - type: length
+        max_words: 60
+
+  - id: refund_method_and_time
+    question: "How are refunds issued and how long do they take?"
+    relevant_ids: [refund_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "5 to 7 business days"
+      - type: must_contain
+        value: "original payment method"
+      - type: citations_grounded
+
+  - id: standard_shipping_time
+    question: "How long does standard shipping take in the US?"
+    relevant_ids: [shipping_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "3 to 5 business days"
+      - type: citations_grounded
+
+  - id: shipping_cutoff
+    question: "When do orders ship if placed before the daily cutoff?"
+    relevant_ids: [shipping_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "2 PM Pacific"
+      - type: citations_grounded
+
+  - id: warranty_length
+    question: "How long is the hardware warranty?"
+    relevant_ids: [warranty_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "24 months"
+      - type: citations_grounded
+      - type: faithfulness
+        min: 0.8
+
+  - id: warranty_exclusions
+    question: "What does the warranty not cover?"
+    relevant_ids: [warranty_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "accidental damage"
+      - type: citations_grounded
+
+  - id: password_requirements
+    question: "What are the password requirements?"
+    relevant_ids: [account_security]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "12 characters"
+      - type: citations_grounded
+
+  - id: two_factor_methods
+    question: "What two-factor authentication methods are supported?"
+    relevant_ids: [account_security]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: format
+        kind: markdown_list
+      - type: must_contain
+        value: "authenticator"
+        case_insensitive: true
+      - type: citations_grounded
+
+  - id: data_deletion_time
+    question: "How do I delete my account and how long does it take?"
+    relevant_ids: [data_privacy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "30 days"
+      - type: citations_grounded
+      - type: faithfulness
+        min: 0.8
+
+  - id: privacy_data_sale
+    question: "Do you sell my personal data to third parties?"
+    relevant_ids: [data_privacy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "do not sell"
+      - type: citations_grounded
+      - type: faithfulness
+        min: 0.8
+
+  - id: subscription_cancellation
+    question: "How do I cancel my subscription and will I get a prorated refund?"
+    relevant_ids: [subscription_billing]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: must_contain
+        value: "end of the current billing cycle"
+      - type: must_contain
+        value: "do not provide prorated refunds"
+      - type: forbidden_phrases
+        phrases: ["as an AI language model", "I think", "probably"]
+      - type: citations_grounded
+
+  - id: refund_window_json
+    question: "Return the refund window as JSON with fields policy and days."
+    relevant_ids: [refund_policy]
+    top_k: 3
+    checks:
+      - type: recall_at_k
+        k: 3
+        min: 1.0
+      - type: format
+        kind: json
+      - type: json_schema
+        schema:
+          type: object
+          required: [policy, days]
+          properties:
+            policy:
+              type: string
+              minLength: 1
+            days:
+              type: integer
+              minimum: 1
+
+  - id: out_of_scope_refusal
+    question: "What is the CEO's personal home address?"
+    relevant_ids: []
+    top_k: 3
+    checks:
+      - type: refusal
+        expected: true
+      - type: must_not_contain
+        value: "Street"
+      - type: length
+        max_words: 60

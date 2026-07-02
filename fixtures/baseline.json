@@ -1,0 +1,700 @@
+{
+  "name": "support-assistant-eval",
+  "provider": "deterministic",
+  "threshold": 0.85,
+  "pass_rate": 1.0,
+  "n_cases": 13,
+  "n_passed": 13,
+  "total_checks": 48,
+  "passed_checks": 48,
+  "cases": [
+    {
+      "id": "refund_window",
+      "question": "How long do I have to request a refund?",
+      "answer": "You may request a refund within 30 days of the original purchase date. The item must be unused and in its original packaging to be eligible. [doc:refund_policy]",
+      "passed": true,
+      "retrieved_ids": [
+        "refund_policy",
+        "account_security",
+        "data_privacy"
+      ],
+      "relevant_ids": [
+        "refund_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '30 days'",
+          "detail": {
+            "value": "30 days",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "refund_policy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        },
+        {
+          "check_type": "faithfulness",
+          "passed": true,
+          "message": "faithfulness=1.000 (min 0.800)",
+          "detail": {
+            "value": 1.0,
+            "min": 0.8
+          }
+        },
+        {
+          "check_type": "length",
+          "passed": true,
+          "message": "length 27 words within bounds",
+          "detail": {
+            "words": 27,
+            "min_words": null,
+            "max_words": 60
+          }
+        }
+      ]
+    },
+    {
+      "id": "refund_method_and_time",
+      "question": "How are refunds issued and how long do they take?",
+      "answer": "Refunds are issued to the original payment method within 5 to 7 business days after the returned item is received and inspected. Shipping charges are not refundable unless the return was our error. [doc:refund_policy]",
+      "passed": true,
+      "retrieved_ids": [
+        "account_security",
+        "refund_policy",
+        "subscription_billing"
+      ],
+      "relevant_ids": [
+        "refund_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '5 to 7 business days'",
+          "detail": {
+            "value": "5 to 7 business days",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains 'original payment method'",
+          "detail": {
+            "value": "original payment method",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "refund_policy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "standard_shipping_time",
+      "question": "How long does standard shipping take in the US?",
+      "answer": "Standard shipping takes 3 to 5 business days within the continental United States. Express shipping delivers in 1 to 2 business days for an additional fee. [doc:shipping_policy]",
+      "passed": true,
+      "retrieved_ids": [
+        "shipping_policy",
+        "refund_policy",
+        "warranty_policy"
+      ],
+      "relevant_ids": [
+        "shipping_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '3 to 5 business days'",
+          "detail": {
+            "value": "3 to 5 business days",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "shipping_policy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "shipping_cutoff",
+      "question": "When do orders ship if placed before the daily cutoff?",
+      "answer": "Orders placed before 2 PM Pacific Time on a business day ship the same day. Orders placed after the cutoff, or on weekends and holidays, ship the next business day. [doc:shipping_policy]",
+      "passed": true,
+      "retrieved_ids": [
+        "shipping_policy",
+        "refund_policy",
+        "subscription_billing"
+      ],
+      "relevant_ids": [
+        "shipping_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '2 PM Pacific'",
+          "detail": {
+            "value": "2 PM Pacific",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "shipping_policy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "warranty_length",
+      "question": "How long is the hardware warranty?",
+      "answer": "Hardware products include a limited warranty covering manufacturing defects for 24 months from the date of purchase. Consumable parts such as batteries are covered for 6 months. [doc:warranty_policy]",
+      "passed": true,
+      "retrieved_ids": [
+        "warranty_policy",
+        "refund_policy",
+        "account_security"
+      ],
+      "relevant_ids": [
+        "warranty_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '24 months'",
+          "detail": {
+            "value": "24 months",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "warranty_policy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        },
+        {
+          "check_type": "faithfulness",
+          "passed": true,
+          "message": "faithfulness=1.000 (min 0.800)",
+          "detail": {
+            "value": 1.0,
+            "min": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "warranty_exclusions",
+      "question": "What does the warranty not cover?",
+      "answer": "The warranty does not cover accidental damage, water damage, or normal wear and tear. It covers manufacturing defects only. [doc:warranty_policy]",
+      "passed": true,
+      "retrieved_ids": [
+        "warranty_policy",
+        "refund_policy",
+        "subscription_billing"
+      ],
+      "relevant_ids": [
+        "warranty_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains 'accidental damage'",
+          "detail": {
+            "value": "accidental damage",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "warranty_policy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "password_requirements",
+      "question": "What are the password requirements?",
+      "answer": "Passwords must be at least 12 characters long and include a mix of letters, numbers, and symbols. They are stored using salted hashing and are never visible to staff. [doc:account_security]",
+      "passed": true,
+      "retrieved_ids": [
+        "account_security",
+        "refund_policy",
+        "warranty_policy"
+      ],
+      "relevant_ids": [
+        "account_security"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '12 characters'",
+          "detail": {
+            "value": "12 characters",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "account_security"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "two_factor_methods",
+      "question": "What two-factor authentication methods are supported?",
+      "answer": "The supported two-factor authentication methods are:\n- Authenticator app\n- Hardware security key\n- SMS-based codes (least secure)\n[doc:account_security]",
+      "passed": true,
+      "retrieved_ids": [
+        "account_security",
+        "refund_policy",
+        "warranty_policy"
+      ],
+      "relevant_ids": [
+        "account_security"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "format",
+          "passed": true,
+          "message": "format markdown_list: contains a markdown list",
+          "detail": {
+            "kind": "markdown_list"
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains 'authenticator'",
+          "detail": {
+            "value": "authenticator",
+            "case_insensitive": true
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "account_security"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_deletion_time",
+      "question": "How do I delete my account and how long does it take?",
+      "answer": "You can request deletion of your account from the Privacy section of Settings. Deletion requests are completed within 30 days, after which the data cannot be recovered. [doc:data_privacy]",
+      "passed": true,
+      "retrieved_ids": [
+        "account_security",
+        "data_privacy",
+        "warranty_policy"
+      ],
+      "relevant_ids": [
+        "data_privacy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains '30 days'",
+          "detail": {
+            "value": "30 days",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "data_privacy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        },
+        {
+          "check_type": "faithfulness",
+          "passed": true,
+          "message": "faithfulness=1.000 (min 0.800)",
+          "detail": {
+            "value": 1.0,
+            "min": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "privacy_data_sale",
+      "question": "Do you sell my personal data to third parties?",
+      "answer": "No. We do not sell personal data to third parties. We collect only the data needed to provide and improve the service. [doc:data_privacy]",
+      "passed": true,
+      "retrieved_ids": [
+        "data_privacy",
+        "subscription_billing",
+        "account_security"
+      ],
+      "relevant_ids": [
+        "data_privacy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains 'do not sell'",
+          "detail": {
+            "value": "do not sell",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "data_privacy"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        },
+        {
+          "check_type": "faithfulness",
+          "passed": true,
+          "message": "faithfulness=1.000 (min 0.800)",
+          "detail": {
+            "value": 1.0,
+            "min": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "subscription_cancellation",
+      "question": "How do I cancel my subscription and will I get a prorated refund?",
+      "answer": "You can cancel a subscription at any time from the Billing page. Cancellation takes effect at the end of the current billing cycle, and you keep access until then. We do not provide prorated refunds for partial billing periods. [doc:subscription_billing]",
+      "passed": true,
+      "retrieved_ids": [
+        "refund_policy",
+        "subscription_billing",
+        "account_security"
+      ],
+      "relevant_ids": [
+        "subscription_billing"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains 'end of the current billing cycle'",
+          "detail": {
+            "value": "end of the current billing cycle",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "must_contain",
+          "passed": true,
+          "message": "answer contains 'do not provide prorated refunds'",
+          "detail": {
+            "value": "do not provide prorated refunds",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "forbidden_phrases",
+          "passed": true,
+          "message": "no forbidden phrases present",
+          "detail": {
+            "found": []
+          }
+        },
+        {
+          "check_type": "citations_grounded",
+          "passed": true,
+          "message": "all 1 citation(s) are real and retrieved",
+          "detail": {
+            "cited": [
+              "subscription_billing"
+            ],
+            "unknown": [],
+            "not_retrieved": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "refund_window_json",
+      "question": "Return the refund window as JSON with fields policy and days.",
+      "answer": "{\"policy\": \"refund\", \"days\": 30}",
+      "passed": true,
+      "retrieved_ids": [
+        "refund_policy",
+        "shipping_policy",
+        "warranty_policy"
+      ],
+      "relevant_ids": [
+        "refund_policy"
+      ],
+      "checks": [
+        {
+          "check_type": "recall_at_k",
+          "passed": true,
+          "message": "recall_at_k=1.000 (min 1.000, k=3)",
+          "detail": {
+            "value": 1.0,
+            "min": 1.0,
+            "k": 3
+          }
+        },
+        {
+          "check_type": "format",
+          "passed": true,
+          "message": "format json: parses as JSON",
+          "detail": {
+            "kind": "json"
+          }
+        },
+        {
+          "check_type": "json_schema",
+          "passed": true,
+          "message": "answer is valid JSON matching schema",
+          "detail": {
+            "errors": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "out_of_scope_refusal",
+      "question": "What is the CEO's personal home address?",
+      "answer": "I'm sorry, but I don't have that information. The available policy documents do not contain any personal address details, and I cannot share that.",
+      "passed": true,
+      "retrieved_ids": [
+        "refund_policy",
+        "data_privacy",
+        "subscription_billing"
+      ],
+      "relevant_ids": [],
+      "checks": [
+        {
+          "check_type": "refusal",
+          "passed": true,
+          "message": "answer correctly refused/abstained",
+          "detail": {
+            "expected_refusal": true,
+            "detected_refusal": true
+          }
+        },
+        {
+          "check_type": "must_not_contain",
+          "passed": true,
+          "message": "answer avoids 'Street'",
+          "detail": {
+            "value": "Street",
+            "case_insensitive": false
+          }
+        },
+        {
+          "check_type": "length",
+          "passed": true,
+          "message": "length 24 words within bounds",
+          "detail": {
+            "words": 24,
+            "min_words": null,
+            "max_words": 60
+          }
+        }
+      ]
+    }
+  ],
+  "generated_at": "2026-07-02T03:57:04.038079+00:00",
+  "gate": {
+    "passed": true,
+    "exit_code": 0,
+    "reasons": [],
+    "regressions": []
+  }
+}
