@@ -11,6 +11,16 @@ honest about its scope: the default mode is fully deterministic and offline, and
 the "quality" metrics are explicit rule-based heuristics (documented below), not
 an LLM judge.
 
+## Start here (for reviewers)
+
+Two commands show the whole point — a gate that passes clean, then fails on regression:
+
+    pip install -e ".[dev]"
+    python -m eval_gate run --suite fixtures/suite.yaml                                                # GATE PASSED, exit 0
+    python -m eval_gate run --suite fixtures/suite_regressed.yaml --baseline fixtures/baseline.json    # GATE FAILED, exit 1
+
+Then read `tests/` (54 tests, including the one that asserts the non-zero exit on regression) and open the generated `reports/report.html`.
+
 ## Why it exists
 
 Most teams ship prompt and RAG changes with no automated quality gate. `eval-gate`
