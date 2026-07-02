@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+.env
+.DS_Store
+
+# Generated reports are reproducible; keep the directory but ignore outputs.
+reports/*.json
+reports/*.html
+!reports/.gitkeep

@@ -1,0 +1,9 @@
+# Core runtime dependency. Everything else is Python standard library.
+PyYAML>=6.0
+
+# Dev/test (install with: pip install -r requirements.txt pytest, or `pip install -e .[dev]`)
+pytest>=8.0
+
+# Optional live-provider SDKs (not required for deterministic mode):
+#   pip install -e .[openai]
+#   pip install -e .[anthropic]

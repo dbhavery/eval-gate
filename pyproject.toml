@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eval-gate"
+version = "0.1.0"
+description = "An evaluation release gate for LLM and RAG systems — deterministic, offline-by-default, CI-fails-on-regression."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Donald B. Havery", email = "dbhavery@gmail.com" }]
+keywords = ["llm", "rag", "evaluation", "ci", "regression", "release-gate"]
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.39"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+eval-gate = "eval_gate.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["eval_gate*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
