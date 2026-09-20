@@ -19,8 +19,25 @@ Two commands show the whole point. A gate that passes clean, then fails on regre
     python -m eval_gate run --suite fixtures/suite.yaml                                                # GATE PASSED, exit 0
     python -m eval_gate run --suite fixtures/suite_regressed.yaml --baseline fixtures/baseline.json    # GATE FAILED, exit 1
 
-Then read `tests/` (89 tests, including the one that asserts the non-zero exit on
+Then read `tests/` (97 tests, including the one that asserts the non-zero exit on
 regression) and open the generated `reports/report.html`.
+
+### The test that checks the tests
+
+A suite that stays green after you break the code proves nothing, so there is a
+third command:
+
+    pytest -q tests/test_mutation.py    # 6 deliberate defects, each must turn the suite red
+
+It copies the package, breaks one line, runs the suite, and requires a non-zero
+exit, once per defect. The defects are real: the ones the 2026-09-19 audit found
+here, plus the obvious next ones. It carries a control that runs an unmutated
+copy and requires a clean pass, because every other assertion in it is of the
+form "the suite failed", which a permanently broken harness would also satisfy.
+
+On its first run one mutation survived. Disabling the pass-rate comparison
+against the baseline left all 89 tests green, so nothing verified the sentence
+this README leads with. `test_d13` in `tests/test_audit_2026_09_19.py` closes it.
 
 `CALIBRATION.md` states what this suite has and has not been measured against,
 including the fact that no grader here has been calibrated against human

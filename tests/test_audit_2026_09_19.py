@@ -318,6 +318,36 @@ def test_d12_identical_rerun_is_not_reported_as_a_drop():
 
 
 # --------------------------------------------------------------------------
+# D13 - a pass-rate drop against the baseline is reported as its own reason
+#
+# Found 2026-09-20 by tests/test_mutation.py, not by a human reading the code.
+# Replacing the comparison in gate.py with `if False:` left all 89 tests green,
+# which meant nothing here verified the behaviour the README leads with.
+#
+# The rule can never be the *sole* cause of a failure: pass_rate is
+# n_passed / n_cases, so any rate below 1.0 means a case failed, and rule 1
+# already fires for that. What it adds is the sentence a human reads in the
+# report, naming the size of the drop. That sentence is worth asserting.
+# --------------------------------------------------------------------------
+
+
+def test_d13_a_pass_rate_drop_against_the_baseline_is_named_in_the_reasons():
+    """A newly added failing case drops the rate without regressing any case."""
+    good = [_case(f"ok{i}", [True]) for i in range(4)]
+    baseline = SuiteResult("s", "deterministic", 1.0, good).to_dict()
+
+    # Same four cases, still passing, plus one new failure. Nothing regressed.
+    current = SuiteResult("s", "deterministic", 1.0, good + [_case("bad", [False])])
+    verdict = evaluate_gate(current, baseline=baseline)
+
+    assert not verdict.passed
+    assert verdict.regressions == [], (
+        "no baseline case changed state, so this must not be called a regression"
+    )
+    assert any("dropped below baseline" in r for r in verdict.reasons), verdict.reasons
+
+
+# --------------------------------------------------------------------------
 # Controls: the fixes must not break the real suites.
 # --------------------------------------------------------------------------
 
