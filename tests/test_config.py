@@ -11,7 +11,7 @@ from tests.conftest import FIXTURES
 def test_load_real_suite():
     suite = load_suite(FIXTURES / "suite.yaml")
     assert suite.name == "support-assistant-eval"
-    assert suite.threshold == 0.85
+    assert suite.threshold == 1.0
     assert len(suite.cases) == 13
     assert suite.cases[0].id == "refund_window"
     assert suite.cases[0].checks[0].type == "recall_at_k"

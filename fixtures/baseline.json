@@ -1,7 +1,7 @@
 {
   "name": "support-assistant-eval",
   "provider": "deterministic",
-  "threshold": 0.85,
+  "threshold": 1.0,
   "pass_rate": 1.0,
   "n_cases": 13,
   "n_passed": 13,
@@ -20,6 +20,13 @@
       ],
       "relevant_ids": [
         "refund_policy"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded",
+        "faithfulness",
+        "length"
       ],
       "checks": [
         {
@@ -59,7 +66,8 @@
           "message": "faithfulness=1.000 (min 0.800)",
           "detail": {
             "value": 1.0,
-            "min": 0.8
+            "min": 0.8,
+            "contentless": false
           }
         },
         {
@@ -86,6 +94,12 @@
       ],
       "relevant_ids": [
         "refund_policy"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "must_contain",
+        "citations_grounded"
       ],
       "checks": [
         {
@@ -143,6 +157,11 @@
       "relevant_ids": [
         "shipping_policy"
       ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded"
+      ],
       "checks": [
         {
           "check_type": "recall_at_k",
@@ -189,6 +208,11 @@
       ],
       "relevant_ids": [
         "shipping_policy"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded"
       ],
       "checks": [
         {
@@ -237,6 +261,12 @@
       "relevant_ids": [
         "warranty_policy"
       ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded",
+        "faithfulness"
+      ],
       "checks": [
         {
           "check_type": "recall_at_k",
@@ -275,7 +305,8 @@
           "message": "faithfulness=1.000 (min 0.800)",
           "detail": {
             "value": 1.0,
-            "min": 0.8
+            "min": 0.8,
+            "contentless": false
           }
         }
       ]
@@ -292,6 +323,11 @@
       ],
       "relevant_ids": [
         "warranty_policy"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded"
       ],
       "checks": [
         {
@@ -340,6 +376,11 @@
       "relevant_ids": [
         "account_security"
       ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded"
+      ],
       "checks": [
         {
           "check_type": "recall_at_k",
@@ -386,6 +427,12 @@
       ],
       "relevant_ids": [
         "account_security"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "format",
+        "must_contain",
+        "citations_grounded"
       ],
       "checks": [
         {
@@ -442,6 +489,12 @@
       "relevant_ids": [
         "data_privacy"
       ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded",
+        "faithfulness"
+      ],
       "checks": [
         {
           "check_type": "recall_at_k",
@@ -480,7 +533,8 @@
           "message": "faithfulness=1.000 (min 0.800)",
           "detail": {
             "value": 1.0,
-            "min": 0.8
+            "min": 0.8,
+            "contentless": false
           }
         }
       ]
@@ -497,6 +551,12 @@
       ],
       "relevant_ids": [
         "data_privacy"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "citations_grounded",
+        "faithfulness"
       ],
       "checks": [
         {
@@ -536,7 +596,8 @@
           "message": "faithfulness=1.000 (min 0.800)",
           "detail": {
             "value": 1.0,
-            "min": 0.8
+            "min": 0.8,
+            "contentless": false
           }
         }
       ]
@@ -553,6 +614,13 @@
       ],
       "relevant_ids": [
         "subscription_billing"
+      ],
+      "check_types": [
+        "recall_at_k",
+        "must_contain",
+        "must_contain",
+        "forbidden_phrases",
+        "citations_grounded"
       ],
       "checks": [
         {
@@ -618,6 +686,11 @@
       "relevant_ids": [
         "refund_policy"
       ],
+      "check_types": [
+        "recall_at_k",
+        "format",
+        "json_schema"
+      ],
       "checks": [
         {
           "check_type": "recall_at_k",
@@ -658,6 +731,11 @@
         "subscription_billing"
       ],
       "relevant_ids": [],
+      "check_types": [
+        "refusal",
+        "must_not_contain",
+        "length"
+      ],
       "checks": [
         {
           "check_type": "refusal",
@@ -690,7 +768,7 @@
       ]
     }
   ],
-  "generated_at": "2026-07-02T03:57:04.038079+00:00",
+  "generated_at": "2026-09-20T04:28:19.349963+00:00",
   "gate": {
     "passed": true,
     "exit_code": 0,

@@ -1,7 +1,10 @@
 name: support-assistant-eval
 corpus_dir: corpus
 responses_dir: responses
-threshold: 0.85
+# Every case is a requirement, so the threshold is 1.0. It was 0.85 with no
+# recorded justification, which let one wholly wrong answer clear the gate at
+# 12/13 = 0.923. See CALIBRATION.md.
+threshold: 1.0
 
 cases:
   - id: refund_window
