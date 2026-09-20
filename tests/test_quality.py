@@ -60,8 +60,18 @@ def test_faithfulness_score_math():
     assert 0.0 < score < 1.0
 
 
-def test_faithfulness_empty_answer_is_perfect():
-    assert faithfulness_score("the and of", "anything") == 1.0  # only stopwords
+def test_faithfulness_contentless_answer_scores_zero():
+    """Changed 2026-09-19 (audit finding D4): this used to return 1.0, so an empty
+    answer passed the faithfulness check. A non-answer is not a grounded answer."""
+    assert faithfulness_score("the and of", "anything") == 0.0
+    assert faithfulness_score("", "anything") == 0.0
+
+
+def test_faithfulness_is_polarity_aware():
+    """Audit finding D3: negation used to be stripped as a stopword."""
+    context = "We do not sell personal data to third parties."
+    assert faithfulness_score("We do not sell personal data to third parties.", context) == 1.0
+    assert faithfulness_score("We sell personal data to third parties.", context) < 0.8
 
 
 def test_faithfulness_check(tiny_corpus):
