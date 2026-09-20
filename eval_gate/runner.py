@@ -43,11 +43,23 @@ class CaseResult:
 
     @property
     def passed(self) -> bool:
-        return all(c.passed for c in self.checks) if self.checks else True
+        """True only when the case has checks and every one of them passed.
+
+        A case with no checks is *not* a pass. ``all([])`` is True, so an
+        unchecked case used to score as a pass and inflate the suite pass-rate
+        (2026-09-19 audit, finding D1). The loader now refuses such a case; this
+        is the second line of defence for results built in code.
+        """
+        return bool(self.checks) and all(c.passed for c in self.checks)
 
     @property
     def n_passed(self) -> int:
         return sum(1 for c in self.checks if c.passed)
+
+    @property
+    def check_types(self) -> list[str]:
+        """The check types run for this case, in order (recorded in baselines)."""
+        return [c.check_type for c in self.checks]
 
 
 @dataclass
@@ -101,6 +113,10 @@ class SuiteResult:
                     "passed": c.passed,
                     "retrieved_ids": c.retrieved_ids,
                     "relevant_ids": c.relevant_ids,
+                    # Recorded so the gate can see a suite being weakened: delete
+                    # the check that was failing and the case "passes" without the
+                    # answer changing (2026-09-19 audit, finding D10).
+                    "check_types": c.check_types,
                     "checks": [asdict(ck) for ck in c.checks],
                 }
                 for c in self.cases

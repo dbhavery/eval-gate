@@ -59,7 +59,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     try:
         suite = load_suite(args.suite)
         result = run_suite(suite, provider_mode=args.provider)
-    except (ConfigError, ProviderError, FileNotFoundError, ValueError) as exc:
+    except (ConfigError, ProviderError, FileNotFoundError, ValueError, KeyError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_ERROR
 
@@ -88,10 +88,20 @@ def _cmd_baseline(args: argparse.Namespace) -> int:
     try:
         suite = load_suite(args.suite)
         result = run_suite(suite, provider_mode=args.provider)
-    except (ConfigError, ProviderError, FileNotFoundError, ValueError) as exc:
+    except (ConfigError, ProviderError, FileNotFoundError, ValueError, KeyError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_ERROR
     verdict = evaluate_gate(result, None)
+    # A baseline is the record of what "good" looked like. Recording a failing run
+    # freezes its failures as expected and every later run compares clean against
+    # them, which silently disables the gate (2026-09-19 audit, finding D8).
+    if not verdict.passed:
+        print("error: refusing to record a baseline from a run that does not pass "
+              "the gate:", file=sys.stderr)
+        for r in verdict.reasons:
+            print(f"  - {r}", file=sys.stderr)
+        print("Fix the failures first, then re-record.", file=sys.stderr)
+        return EXIT_ERROR
     out = write_json(result, args.out, verdict)
     print(f"wrote baseline: {out}  (pass-rate {result.pass_rate * 100:.0f}%)")
     return EXIT_OK
