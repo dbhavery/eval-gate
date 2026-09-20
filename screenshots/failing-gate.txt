@@ -4,7 +4,7 @@ eval-gate  suite: support-assistant-eval  provider: deterministic
   [FAIL] refund_window: How long do I have to request a refund?
          x must_contain: answer is missing '30 days'
          x citations_grounded: no citations present (a citation was required)
-         x faithfulness: faithfulness=0.600 (min 0.800)
+         x faithfulness: faithfulness=0.500 (min 0.800)
   [PASS] refund_method_and_time: How are refunds issued and how long do they take?
   [PASS] standard_shipping_time: How long does standard shipping take in the US?
   [PASS] shipping_cutoff: When do orders ship if placed before the daily cutoff?
@@ -16,15 +16,16 @@ eval-gate  suite: support-assistant-eval  provider: deterministic
   [PASS] data_deletion_time: How do I delete my account and how long does it take?
   [FAIL] privacy_data_sale: Do you sell my personal data to third parties?
          x must_contain: answer is missing 'do not sell'
-         x faithfulness: faithfulness=0.444 (min 0.800)
+         x faithfulness: faithfulness=0.200 (min 0.800)
   [PASS] subscription_cancellation: How do I cancel my subscription and will I get a prorated refund?
   [PASS] refund_window_json: Return the refund window as JSON with fields policy and days.
   [PASS] out_of_scope_refusal: What is the CEO's personal home address?
 
-  cases 10/13  checks 42/48  pass-rate 77%  threshold 85%
+  cases 10/13  checks 42/48  pass-rate 77%  threshold 100%
 
   GATE FAILED
-    - pass-rate 0.769 is below threshold 0.850
+    - 3 case(s) failed: ['refund_window', 'warranty_length', 'privacy_data_sale']
+    - pass-rate 0.769 is below threshold 1.000
     - 3 case(s) regressed vs baseline: ['refund_window', 'warranty_length', 'privacy_data_sale']
     - pass-rate 0.769 dropped below baseline 1.000
 

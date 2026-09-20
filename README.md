@@ -3,7 +3,7 @@
 An **evaluation release gate for LLM and RAG systems**. It runs a suite of graded
 cases against a document corpus, checks each answer with real assertion,
 retrieval, and grounding logic, and returns a **non-zero exit code when quality
-regresses** against a recorded baseline — so a bad prompt, model, or retrieval
+regresses** against a recorded baseline, so a bad prompt, model, or retrieval
 change fails CI the same way a broken unit test does.
 
 This is a portfolio proof and a reusable gate, not a hosted product. It is
@@ -13,13 +13,18 @@ an LLM judge.
 
 ## Start here (for reviewers)
 
-Two commands show the whole point — a gate that passes clean, then fails on regression:
+Two commands show the whole point. A gate that passes clean, then fails on regression:
 
     pip install -e ".[dev]"
     python -m eval_gate run --suite fixtures/suite.yaml                                                # GATE PASSED, exit 0
     python -m eval_gate run --suite fixtures/suite_regressed.yaml --baseline fixtures/baseline.json    # GATE FAILED, exit 1
 
-Then read `tests/` (54 tests, including the one that asserts the non-zero exit on regression) and open the generated `reports/report.html`.
+Then read `tests/` (89 tests, including the one that asserts the non-zero exit on
+regression) and open the generated `reports/report.html`.
+
+`CALIBRATION.md` states what this suite has and has not been measured against,
+including the fact that no grader here has been calibrated against human
+judgment. Read it before reading a green gate as a quality claim.
 
 ## Why it exists
 
@@ -37,6 +42,10 @@ answer, with a per-case HTML report a human can read in 30 seconds.
   all implemented and unit-tested.
 - **A gate, not just a report.** It compares against a baseline and exits `1` on
   regression (`2` on a tool/config error).
+- **One failing case fails the gate.** The pass-rate threshold is a second bar and
+  cannot excuse a failing case. A suite that declares a check the tool cannot run,
+  a check with no way to fail, or a case with no checks is refused at load time
+  with exit `2` rather than scored.
 
 ## Install
 
@@ -64,7 +73,7 @@ Exits `0`, prints a per-case summary, and writes `reports/report.json` +
 # Record a baseline from a known-good run (already checked in as fixtures/baseline.json):
 python -m eval_gate baseline --suite fixtures/suite.yaml --out fixtures/baseline.json
 
-# Gate a run against it — passes because nothing regressed:
+# Gate a run against it. Passes because nothing regressed:
 python -m eval_gate run --suite fixtures/suite.yaml --baseline fixtures/baseline.json
 echo "exit: $?"   # 0
 ```
@@ -76,7 +85,7 @@ refund window, a policy contradiction, and a citation to a non-existent doc):
 
 ```bash
 python -m eval_gate run --suite fixtures/suite_regressed.yaml --baseline fixtures/baseline.json
-echo "exit: $?"   # 1  — GATE FAILED (threshold + baseline regression)
+echo "exit: $?"   # 1  GATE FAILED (failing cases, threshold, baseline regression)
 ```
 
 ## Open the HTML report
@@ -92,7 +101,7 @@ start reports/report.html         # Windows
 ## Run the tests
 
 ```bash
-pytest -q            # 54 tests
+pytest -q            # 89 tests
 ```
 
 ## Optional: run against a live model
@@ -132,7 +141,7 @@ responses/ ─┘                1. TfidfRetriever.retrieve(question)   → retr
 | `eval_gate/providers.py` | Deterministic fixture provider; optional OpenAI/Anthropic |
 | `eval_gate/checks/` | The check registry and three families (below) |
 | `eval_gate/runner.py` | Orchestrates a suite → `SuiteResult` |
-| `eval_gate/gate.py` | Threshold + baseline regression → verdict + exit code |
+| `eval_gate/gate.py` | Failing cases, threshold, baseline regression and suite weakening to a verdict + exit code |
 | `eval_gate/report.py` | JSON report + self-contained dark-theme HTML |
 | `eval_gate/cli.py` | `run` / `baseline` / `list-checks` |
 
@@ -142,7 +151,7 @@ responses/ ─┘                1. TfidfRetriever.retrieve(question)   → retr
   `regex`, `json_schema` (a JSON-Schema subset validator), `refusal` (detects
   abstention and asserts it was expected or not).
 - **Retrieval & grounding** (`checks/retrieval.py`): `recall_at_k`,
-  `precision_at_k`, `mrr`, `ndcg_at_k`, and `citations_grounded` — every
+  `precision_at_k`, `mrr`, `ndcg_at_k`, and `citations_grounded`. Every
   `[doc:<id>]` the answer cites must be a real corpus document *and* one that was
   actually retrieved.
 - **Quality** (`checks/quality.py`): `length` bounds, `forbidden_phrases`,
@@ -150,16 +159,24 @@ responses/ ─┘                1. TfidfRetriever.retrieve(question)   → retr
 
 ### Honest limitations
 
-- **Faithfulness is a lexical-overlap heuristic**, not semantic entailment. It
-  measures the fraction of the answer's content words that appear in the
-  retrieved context. It catches off-topic hallucination and fabricated specifics;
-  it will not catch a fluent paraphrase that subtly changes meaning. Swap in an
-  NLI model or LLM judge behind the same check interface for stronger signal.
+- **Faithfulness is a polarity-aware lexical-overlap heuristic**, not semantic
+  entailment. It measures the fraction of the answer's content words that appear
+  in the retrieved context with the same polarity, so a dropped or invented
+  negation lowers the score. It catches off-topic hallucination, fabricated
+  specifics, and a flipped claim. It will not catch a fluent paraphrase that
+  changes meaning while reusing the context's words. Swap in an NLI model or LLM
+  judge behind the same check interface for stronger signal.
+- **No grader here is calibrated against human judgment**, and the suite holds no
+  adversarial probes or canaries. `CALIBRATION.md` records what that means and
+  what closing it would take.
+- **`json_schema` validates a documented subset of JSON Schema** and refuses a
+  schema using a keyword it cannot enforce, rather than ignoring the keyword and
+  reporting a pass.
 - **The TF-IDF retriever is a baseline** so the demo runs with zero setup. Point
   `runner` at your production retriever (same `retrieve(query, k) -> ids`
   signature) for real evaluation.
-- Recorded fixture answers are exactly that — recorded once. Live-provider mode
-  is where you evaluate a model under change.
+- Recorded fixture answers are exactly that: recorded once. Live-provider mode is
+  where you evaluate a model under change.
 
 ## License
 

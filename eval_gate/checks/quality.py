@@ -5,7 +5,7 @@ strings), ``format`` (must look like json / markdown_list / plain), and
 ``faithfulness`` (heuristic token-grounding of the answer against retrieved
 context). These are rule-based, not an LLM-judge, so results are reproducible
 and free. ``faithfulness`` is explicitly a *polarity-aware* lexical-overlap
-heuristic, not a semantic entailment model — documented as such.
+heuristic. It is not a semantic entailment model, and says so.
 """
 
 from __future__ import annotations
@@ -208,7 +208,7 @@ def faithfulness_score(answer: str, context_text: str) -> float:
 
     Returns 0.0 when the answer has no content words: an empty or filler-only
     answer is not a grounded answer, it is a non-answer, and the gate must see
-    it (2026-09-19 audit, finding D4 — this used to return 1.0).
+    it (2026-09-19 audit, finding D4; this used to return 1.0).
     """
     stripped = _CITATION_RE.sub(" ", answer)
     answer_terms = polarity_terms(stripped)
