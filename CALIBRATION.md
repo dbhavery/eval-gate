@@ -90,6 +90,31 @@ implying otherwise.
 - `recall_at_k` and the other IR metrics score the local TF-IDF retriever, which
   exists so the demo runs offline. They say nothing about a production retriever.
 
+## Audit findings left unfixed, and why
+
+The 2026-09-19 audit fixed twelve ways a bad answer could pass the gate or a good
+run could be mis-reported. Four further observations were left alone on purpose.
+
+1. **`must_contain` matches a substring, so a negated sentence satisfies it.**
+   "Refunds are not available within 30 days" passes `must_contain: "30 days"`.
+   This is the documented behaviour of a substring assertion, and narrowing it
+   into a phrase-with-polarity matcher would change every suite that already
+   uses it. The suite-level answer is to pair the check with `faithfulness`,
+   which is now polarity-aware, and with `must_not_contain`. Recorded here so
+   nobody reads a green `must_contain` as a claim about meaning.
+2. **`citations_grounded` does not check that the cited document supports the
+   sentence.** It confirms the document exists and was retrieved. Attribution at
+   the sentence level needs an entailment model, which this repo does not have
+   and which `CALIBRATION.md` step 3 would have to measure first.
+3. **`precision_at_k` divides by the number of documents actually returned, not
+   by `k`.** With `k=3` and one document retrieved, one relevant hit scores 1.000
+   rather than 0.333. Both conventions appear in IR practice. No case in the
+   suite uses this check, so changing the definition would alter recorded
+   behaviour to fix a number nothing currently reads. It is written down instead.
+4. **`format: kind: json` accepts any valid JSON value, including a bare `42`.**
+   That is what the check claims to test. A case that needs an object says so
+   with `json_schema`, which does enforce it.
+
 ## What it would take to calibrate this
 
 Ordered by how much each step would change the confidence a green gate deserves.
