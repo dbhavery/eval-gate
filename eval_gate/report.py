@@ -111,8 +111,8 @@ def render_html(result: SuiteResult, verdict: GateVerdict) -> str:
             f"<td>{_esc(ck.message)}</td></tr>"
             for ck in c.checks
         )
-        retrieved = ", ".join(_esc(d) for d in c.retrieved_ids) or "&mdash;"
-        relevant = ", ".join(_esc(d) for d in c.relevant_ids) or "&mdash;"
+        retrieved = ", ".join(_esc(d) for d in c.retrieved_ids) or "none"
+        relevant = ", ".join(_esc(d) for d in c.relevant_ids) or "none"
         cases_html.append(
             f"""
     <details class="case" {"open" if not c.passed else ""}>
@@ -136,7 +136,7 @@ def render_html(result: SuiteResult, verdict: GateVerdict) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eval-gate report &mdash; {_esc(result.name)}</title>
+<title>eval-gate report: {_esc(result.name)}</title>
 <style>{_CSS}</style></head>
 <body><div class="wrap">
   <h1>{_esc(result.name)}</h1>
