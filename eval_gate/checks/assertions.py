@@ -11,8 +11,25 @@ import json
 import re
 from typing import Any
 
-from eval_gate.checks import CheckContext, CheckOutcome, _param, register
+from eval_gate.checks import (
+    CheckContext,
+    CheckOutcome,
+    _bool_flag,
+    _non_empty_str,
+    _param,
+    register,
+)
 from eval_gate.config import CheckSpec
+
+
+class SchemaDefinitionError(ValueError):
+    """Raised when a ``json_schema`` check uses a keyword this validator cannot enforce.
+
+    Silently ignoring an unsupported keyword is worse than not supporting it: a
+    suite author writes ``additionalProperties: false`` or ``pattern``, reads a
+    green check, and believes a contract is being enforced that is not
+    (2026-09-19 audit, finding D7).
+    """
 
 # Phrases that signal a model declining / abstaining. Deliberately narrow to
 # avoid false positives on normal answers.
@@ -32,7 +49,16 @@ def is_refusal(text: str) -> bool:
     return bool(_REFUSAL_RE.search(text))
 
 
-@register("must_contain")
+def _value_and_flag(spec: CheckSpec) -> list[str]:
+    return _non_empty_str(spec, "value") + _bool_flag(spec, "case_insensitive")
+
+
+@register(
+    "must_contain",
+    params={"value", "case_insensitive"},
+    required={"value"},
+    validator=_value_and_flag,
+)
 def _must_contain(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     value = str(_param(spec, "value"))
     ci = bool(_param(spec, "case_insensitive", required=False, default=False))
@@ -47,7 +73,12 @@ def _must_contain(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     )
 
 
-@register("must_not_contain")
+@register(
+    "must_not_contain",
+    params={"value", "case_insensitive"},
+    required={"value"},
+    validator=_value_and_flag,
+)
 def _must_not_contain(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     value = str(_param(spec, "value"))
     ci = bool(_param(spec, "case_insensitive", required=False, default=False))
@@ -62,7 +93,23 @@ def _must_not_contain(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     )
 
 
-@register("regex")
+def _compilable_pattern(spec: CheckSpec) -> list[str]:
+    errors = _non_empty_str(spec, "pattern") + _bool_flag(spec, "case_insensitive")
+    if errors:
+        return errors
+    try:
+        re.compile(str(spec.params["pattern"]))
+    except re.error as exc:
+        return [f"check 'regex': 'pattern' does not compile: {exc}"]
+    return []
+
+
+@register(
+    "regex",
+    params={"pattern", "case_insensitive"},
+    required={"pattern"},
+    validator=_compilable_pattern,
+)
 def _regex(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     pattern = str(_param(spec, "pattern"))
     ci = bool(_param(spec, "case_insensitive", required=False, default=False))
@@ -86,14 +133,79 @@ def _extract_json(text: str) -> Any:
     return json.loads(candidate)
 
 
+SUPPORTED_SCHEMA_KEYWORDS = frozenset(
+    {
+        "type",
+        "required",
+        "properties",
+        "items",
+        "enum",
+        "minimum",
+        "maximum",
+        "minLength",
+        "maxLength",
+        # Annotations that carry no constraint, so ignoring them enforces nothing
+        # that was promised.
+        "title",
+        "description",
+    }
+)
+
+_SCHEMA_TYPES = frozenset(
+    {"object", "array", "string", "number", "integer", "boolean", "null"}
+)
+
+
+def validate_schema_definition(schema: Any, path: str = "$") -> list[str]:
+    """Return every reason *schema* cannot be enforced by :func:`validate_schema`.
+
+    Used by the suite loader so an unenforceable schema is a config error at
+    load time rather than a check that quietly enforces less than it says.
+    """
+    if not isinstance(schema, dict):
+        return [f"{path}: schema must be a mapping, got {type(schema).__name__}"]
+
+    errors: list[str] = []
+    unsupported = sorted(set(schema) - SUPPORTED_SCHEMA_KEYWORDS)
+    if unsupported:
+        errors.append(
+            f"{path}: unsupported schema keyword(s) {unsupported}; this validator "
+            f"enforces only {sorted(SUPPORTED_SCHEMA_KEYWORDS)}"
+        )
+    declared_type = schema.get("type")
+    if declared_type is not None and declared_type not in _SCHEMA_TYPES:
+        errors.append(f"{path}: unknown schema type '{declared_type}'")
+    props = schema.get("properties")
+    if props is not None:
+        if not isinstance(props, dict):
+            errors.append(f"{path}.properties: must be a mapping")
+        else:
+            for key, sub in props.items():
+                errors.extend(validate_schema_definition(sub, f"{path}.{key}"))
+    if "items" in schema:
+        errors.extend(validate_schema_definition(schema["items"], f"{path}[]"))
+    if "required" in schema and not isinstance(schema["required"], list):
+        errors.append(f"{path}.required: must be a list of property names")
+    return errors
+
+
 def validate_schema(instance: Any, schema: dict[str, Any], path: str = "$") -> list[str]:
     """Validate *instance* against a JSON-Schema subset. Returns a list of errors.
 
     Supported keywords: ``type`` (object/array/string/number/integer/boolean/null),
     ``required``, ``properties``, ``items``, ``enum``, ``minimum``, ``maximum``,
     ``minLength``, ``maxLength``. Enough to assert real output contracts without
-    pulling in a heavyweight dependency; unsupported keywords are ignored.
+    pulling in a heavyweight dependency.
+
+    Raises:
+        SchemaDefinitionError: If the schema uses a keyword this validator
+            cannot enforce. It refuses rather than ignoring it, so a schema
+            never enforces less than it appears to.
     """
+    definition_errors = validate_schema_definition(schema, path)
+    if definition_errors:
+        raise SchemaDefinitionError("; ".join(definition_errors))
+
     errors: list[str] = []
     _TYPE_CHECKS = {
         "object": lambda v: isinstance(v, dict),
@@ -145,7 +257,14 @@ def validate_schema(instance: Any, schema: dict[str, Any], path: str = "$") -> l
     return errors
 
 
-@register("json_schema")
+def _schema_param(spec: CheckSpec) -> list[str]:
+    schema = spec.params.get("schema")
+    if not isinstance(schema, dict) or not schema:
+        return [f"check 'json_schema': 'schema' must be a non-empty mapping, got {schema!r}"]
+    return validate_schema_definition(schema)
+
+
+@register("json_schema", params={"schema"}, required={"schema"}, validator=_schema_param)
 def _json_schema(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     schema = _param(spec, "schema")
     if not isinstance(schema, dict):
@@ -169,7 +288,11 @@ def _json_schema(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     )
 
 
-@register("refusal")
+@register(
+    "refusal",
+    params={"expected"},
+    validator=lambda spec: _bool_flag(spec, "expected"),
+)
 def _refusal(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     expected = bool(_param(spec, "expected", required=False, default=True))
     got = is_refusal(ctx.answer)

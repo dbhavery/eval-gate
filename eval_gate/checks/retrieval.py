@@ -10,8 +10,22 @@ from __future__ import annotations
 import math
 import re
 
-from eval_gate.checks import CheckContext, CheckOutcome, _param, register
+from eval_gate.checks import (
+    CheckContext,
+    CheckOutcome,
+    _bool_flag,
+    _param,
+    _positive_int,
+    _unit_interval,
+    register,
+)
 from eval_gate.config import CheckSpec
+
+
+def _metric_params(spec: CheckSpec) -> list[str]:
+    """``min`` must be a real threshold in [0, 1] and ``k`` a rank of at least 1."""
+    return _unit_interval(spec, "min") + _positive_int(spec, "k")
+
 
 # Matches citation markers like [doc:refund_policy] or [doc: shipping_policy].
 _CITATION_RE = re.compile(r"\[doc:\s*([a-z0-9_\-]+)\s*\]", re.IGNORECASE)
@@ -78,30 +92,34 @@ def _metric_check(spec: CheckSpec, ctx: CheckContext, value: float) -> CheckOutc
     )
 
 
-@register("recall_at_k")
+@register("recall_at_k", params={"min", "k"}, validator=_metric_params)
 def _recall(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     k = int(_param(spec, "k", required=False, default=len(ctx.retrieved_ids)))
     return _metric_check(spec, ctx, recall_at_k(ctx.retrieved_ids, ctx.relevant_ids, k))
 
 
-@register("precision_at_k")
+@register("precision_at_k", params={"min", "k"}, validator=_metric_params)
 def _precision(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     k = int(_param(spec, "k", required=False, default=len(ctx.retrieved_ids)))
     return _metric_check(spec, ctx, precision_at_k(ctx.retrieved_ids, ctx.relevant_ids, k))
 
 
-@register("mrr")
+@register("mrr", params={"min"}, validator=_metric_params)  # MRR has no cutoff
 def _mrr(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     return _metric_check(spec, ctx, mrr(ctx.retrieved_ids, ctx.relevant_ids))
 
 
-@register("ndcg_at_k")
+@register("ndcg_at_k", params={"min", "k"}, validator=_metric_params)
 def _ndcg(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     k = int(_param(spec, "k", required=False, default=len(ctx.retrieved_ids)))
     return _metric_check(spec, ctx, ndcg_at_k(ctx.retrieved_ids, ctx.relevant_ids, k))
 
 
-@register("citations_grounded")
+@register(
+    "citations_grounded",
+    params={"require_citation"},
+    validator=lambda spec: _bool_flag(spec, "require_citation"),
+)
 def _citations_grounded(spec: CheckSpec, ctx: CheckContext) -> CheckOutcome:
     """Every ``[doc:<id>]`` cited must be a real corpus doc and be retrieved.
 

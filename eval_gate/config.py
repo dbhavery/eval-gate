@@ -94,6 +94,10 @@ def load_suite(path: str | Path) -> SuiteSpec:
     Raises:
         ConfigError: If the file is missing, unparseable, or malformed.
     """
+    # Imported here, not at module scope: eval_gate.checks imports CheckSpec from
+    # this module, so a top-level import would be circular.
+    from eval_gate.checks import validate_check_spec  # noqa: PLC0415
+
     p = Path(path).resolve()
     if not p.is_file():
         raise ConfigError(f"suite file not found: {p}")
@@ -110,9 +114,16 @@ def load_suite(path: str | Path) -> SuiteSpec:
     corpus_dir = str(raw.get("corpus_dir", "corpus"))
     responses_dir = str(raw.get("responses_dir", "responses"))
 
+    # A threshold of 0.0 is not a lenient gate, it is no gate: every run clears
+    # it. The suite must state a real bar (2026-09-19 audit, finding D11).
     threshold = raw.get("threshold", 1.0)
-    if not isinstance(threshold, (int, float)) or not (0.0 <= threshold <= 1.0):
-        raise ConfigError(f"suite 'threshold' must be a number in [0, 1], got {threshold!r}")
+    if isinstance(threshold, bool) or not isinstance(threshold, (int, float)):
+        raise ConfigError(f"suite 'threshold' must be a number in (0, 1], got {threshold!r}")
+    if not (0.0 < float(threshold) <= 1.0):
+        raise ConfigError(
+            f"suite 'threshold' must be greater than 0 and at most 1, got {threshold!r}; "
+            "a threshold of 0 cannot fail"
+        )
 
     raw_cases = _require(raw, "cases", "suite")
     if not isinstance(raw_cases, list) or not raw_cases:
@@ -138,13 +149,28 @@ def load_suite(path: str | Path) -> SuiteSpec:
         raw_checks = rc.get("checks", [])
         if not isinstance(raw_checks, list):
             raise ConfigError(f"{ctx}: 'checks' must be a list")
+        # A case with no checks is a defect in the suite, not a passing case:
+        # `all([])` is True, so it used to score as a silent pass and inflate the
+        # pass-rate (2026-09-19 audit, finding D1).
+        if not raw_checks:
+            raise ConfigError(
+                f"{ctx} (id '{cid}'): a case must declare at least one check; "
+                "a case with no checks cannot fail and would score as a pass"
+            )
         checks: list[CheckSpec] = []
         for j, rk in enumerate(raw_checks):
             if not isinstance(rk, dict):
                 raise ConfigError(f"{ctx}.checks[{j}] must be a mapping")
             ctype = str(_require(rk, "type", f"{ctx}.checks[{j}]"))
             params = {k: v for k, v in rk.items() if k != "type"}
-            checks.append(CheckSpec(type=ctype, params=params))
+            spec = CheckSpec(type=ctype, params=params)
+            # Validate against the check's declared contract now, so a typo or a
+            # vacuous check is a config error (exit 2) instead of a check that
+            # cannot fail, or a KeyError mid-run that looks like a gate failure
+            # (2026-09-19 audit, findings D5, D6, D7).
+            for err in validate_check_spec(spec):
+                raise ConfigError(f"{ctx}.checks[{j}] (id '{cid}'): {err}")
+            checks.append(spec)
 
         cases.append(
             CaseSpec(
